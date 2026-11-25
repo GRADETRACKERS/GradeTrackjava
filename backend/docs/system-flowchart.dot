@@ -1,0 +1,53 @@
+digraph G {
+  rankdir=TB; nodesep=0.35; ranksep=0.42;
+  node [fontname="Helvetica", fontsize=11, style="filled", fillcolor="#ffffff", color="#111c3a"];
+  edge [fontname="Helvetica", fontsize=10, color="#111c3a"];
+
+  start  [label="START", shape=oval, fillcolor="#f2a900"];
+  load   [label="JAVA: Main loads the data file\n(data/gradetrack-data.txt)", shape=box, fillcolor="#fff4d6"];
+  exists [label="File exists?", shape=diamond];
+  sample [label="Create sample courses", shape=box, fillcolor="#fff4d6"];
+  read   [label="Read saved courses\n(FileManager.load)", shape=box, fillcolor="#fff4d6"];
+  srv    [label="JAVA: ApiServer starts\nserves the website + /api/", shape=box, fillcolor="#fff4d6"];
+  open   [label="User opens http://localhost:8080\nin the browser", shape=parallelogram];
+  health [label="Website asks /api/health\nJava server answers?", shape=diamond];
+  local  [label="Browser-only mode\n(saves in the browser)", shape=box, fillcolor="#e8ecf7"];
+  menu   [label="Website: menu with 4 pages\nOverview | Courses | Target grade | GPA", shape=box, fillcolor="#e8ecf7"];
+  choice [label="Which page / action?", shape=diamond];
+
+  ov  [label="OVERVIEW\nsearch by name, sort by\norder / name / grade", shape=parallelogram];
+  co  [label="COURSES\nnew course, add / edit / delete score,\nset weight, search + sort scores", shape=parallelogram];
+  ta  [label="TARGET GRADE\nchoose course, type target %", shape=parallelogram];
+  gp  [label="GPA\nopen the page", shape=parallelogram];
+
+  req  [label="Website sends a JSON request\nto the Java API", shape=box, fillcolor="#e8ecf7"];
+  val  [label="JAVA: GradeService parses and validates\n(Validator, Assessment / Course setters,\nTextUtil duplicate check)", shape=box, fillcolor="#fff4d6"];
+  ok   [label="Input valid?", shape=diamond];
+  err  [label="Java throws an exception\n(InvalidInput / Duplicate / NotFound)\nAPI answers 400 / 409 / 404 + message", shape=box, fillcolor="#fde8e8"];
+  show [label="Website shows the message\nor the small pop-up", shape=box, fillcolor="#fde8e8"];
+
+  kind [label="Read or change?", shape=diamond];
+  calc [label="JAVA: calculate\nGradeCalculator (running grade,\nneeded average), GradeScale (GPA),\nGradeBook / Course (search, sort)", shape=box, fillcolor="#fff4d6"];
+  chg  [label="JAVA: change the model\n(add / edit / delete)\nthen FileManager.save", shape=box, fillcolor="#fff4d6"];
+  resp [label="API answers 200 / 201 with JSON", shape=box, fillcolor="#fff4d6"];
+  draw [label="Website redraws the page\nwith the new data", shape=box, fillcolor="#e8ecf7"];
+
+  ex   [label="Close the browser /\nstop the server?", shape=diamond];
+  stop [label="END", shape=oval, fillcolor="#f2a900"];
+
+  start -> load -> exists;
+  exists -> read [label="yes"]; exists -> sample [label="no"];
+  read -> srv; sample -> srv; srv -> open -> health;
+  health -> menu [label="yes (Java backend mode)"]; health -> local [label="no"]; local -> menu;
+  menu -> choice;
+  choice -> ov [label="Overview"]; choice -> co [label="Courses"];
+  choice -> ta [label="Target grade"]; choice -> gp [label="GPA"];
+  ov -> req; co -> req; ta -> req; gp -> req;
+  req -> val -> ok;
+  ok -> err [label="no"]; err -> show;
+  ok -> kind [label="yes"];
+  kind -> calc [label="read"]; kind -> chg [label="change"];
+  calc -> resp; chg -> resp; resp -> draw;
+  show -> ex; draw -> ex;
+  ex -> choice [label="no"]; ex -> stop [label="yes"];
+}

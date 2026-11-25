@@ -1,0 +1,18 @@
+digraph A {
+  rankdir=LR; nodesep=0.3; ranksep=0.5;
+  node [fontname="Helvetica", fontsize=11, shape=box, style="filled", color="#111c3a", fillcolor="#ffffff"];
+  edge [fontname="Helvetica", fontsize=10, color="#111c3a"];
+  subgraph cluster_web { label="WEBSITE (HTML / CSS / JavaScript)"; fontname="Helvetica"; style=dashed; color="#5a657d";
+    ui [label="index.html\nOverview, Courses,\nTarget grade, GPA", fillcolor="#e8ecf7"]; }
+  subgraph cluster_java { label="JAVA BACKEND (packages)"; fontname="Helvetica"; style=dashed; color="#c98a00";
+    server [label="server\nApiServer, Json", fillcolor="#fff4d6"];
+    service [label="service\nGradeService", fillcolor="#fff4d6"];
+    logic [label="logic\nGradeCalculator, GradeScale,\nValidator, TextUtil", fillcolor="#fff4d6"];
+    model [label="model\nAssessment (abstract) + 5 subclasses,\nCourse, GradeBook", fillcolor="#fff4d6"];
+    exc [label="exception\nInvalidInput, Duplicate,\nTargetTooLow, NotFound", fillcolor="#fde8e8"];
+    storage [label="storage\nFileManager", fillcolor="#fff4d6"]; }
+  file [label="data/\ngradetrack-data.txt", shape=cylinder, fillcolor="#ffffff"];
+  ui -> server [label="HTTP + JSON", dir=both];
+  server -> service -> logic; service -> model; logic -> model; model -> storage -> file;
+  exc -> server [style=dashed, label="errors"];
+}

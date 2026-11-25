@@ -1,0 +1,705 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>GradeTrack</title>
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#111c3a">
+<link rel="icon" type="image/svg+xml" href="icons/icon.svg">
+<link rel="apple-touch-icon" href="icons/icon.svg">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@600;800&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+:root{--bg:#f1f5f9;--surface:#fff;--ink:#111c3a;--muted:#5a657d;--line:#dfe5ee;--amber:#f2a900;--amber-ink:#111c3a;--nav:#111c3a;--nav-ink:#fff;--good:#207a50;--warn:#a96b00;--bad:#c23a3a;--track:#e3e8ef;
+color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0d1426;--surface:#161f38;--ink:#e9eefc;--muted:#9aa6c4;--line:#27314f;--nav:#e9eefc;--nav-ink:#0d1426;--good:#4cc98a;--warn:#e8b04a;--bad:#ff7d7d;--track:#27314f;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#0d1426;--surface:#161f38;--ink:#e9eefc;--muted:#9aa6c4;--line:#27314f;--nav:#e9eefc;--nav-ink:#0d1426;--good:#4cc98a;--warn:#e8b04a;--bad:#ff7d7d;--track:#27314f;color-scheme:dark}
+*,*::before,*::after{box-sizing:inherit}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 1rem/1.55 "IBM Plex Sans",system-ui,sans-serif}
+h1,h2,.brand,.big,.pct{font-family:"Bricolage Grotesque","IBM Plex Sans",sans-serif;letter-spacing:-.02em}
+.top{background:var(--bg);border-bottom:1px solid var(--line);position:sticky;top:env(safe-area-inset-top,0px);z-index:5}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);background:var(--bg);z-index:10}
+.top-in{max-width:1000px;margin:0 auto;padding:.6rem 1rem;display:flex;justify-content:space-between;align-items:center;gap:.5rem;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:.6rem;font-weight:800;font-size:1.5rem;color:var(--ink);text-decoration:none}
+.brand i{width:14px;height:28px;border-radius:3px;background:var(--amber);display:block}
+nav{display:flex;gap:.25rem;flex-wrap:wrap}
+nav a{padding:.5rem .9rem;border-radius:10px;color:var(--muted);text-decoration:none;font-weight:500;min-height:44px;display:flex;align-items:center}
+nav a[aria-current="page"]{background:var(--nav);color:var(--nav-ink)}
+a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid var(--amber);outline-offset:2px}
+.wrap{max-width:1000px;margin:0 auto;padding:2rem 1rem 4rem}
+h1{font-weight:800;font-size:clamp(2.3rem,7vw,4.2rem);line-height:1.02;margin:.5rem 0 1rem}
+h2{font-weight:800;font-size:clamp(1.8rem,4vw,2.4rem);line-height:1.1;margin:0 0 .75rem}
+.lead{color:var(--muted);font-size:1.15rem;max-width:44ch;margin:0 0 1.5rem}
+.row{display:flex;gap:.75rem;flex-wrap:wrap;align-items:end}
+.btn{font:600 1rem "IBM Plex Sans",sans-serif;min-height:44px;padding:.6rem 1.2rem;border-radius:10px;border:1px solid var(--line);background:var(--surface);color:var(--ink);cursor:pointer}
+.btn.pri{background:var(--amber);border-color:var(--amber);color:var(--amber-ink)}
+.btn.sm{min-height:36px;padding:.25rem .8rem;font-size:.9rem;color:var(--muted)}
+.btn.sm:hover{color:var(--bad);border-color:var(--bad)}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:1rem;margin-top:2rem}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:1.25rem}
+button.card{text-align:left;font:inherit;color:inherit;cursor:pointer;width:100%}
+.card h3{margin:0;font:600 1.15rem "Bricolage Grotesque",sans-serif}
+.big{font-weight:800;font-size:2.6rem;line-height:1.1;margin:.2rem 0 .6rem}
+.bar{height:12px;border-radius:6px;background:var(--track);overflow:hidden;margin:.6rem 0}
+.bar i{display:block;height:100%;background:var(--good);border-radius:6px;transition:width .4s}
+.muted{color:var(--muted)}
+.tabs{display:flex;gap:.5rem;flex-wrap:wrap;margin:1rem 0 1.25rem}
+.tab{font:600 1rem "IBM Plex Sans",sans-serif;min-height:44px;padding:.5rem 1.1rem;border-radius:12px;border:1px solid var(--line);background:var(--surface);color:var(--ink);cursor:pointer}
+.tab[aria-pressed="true"]{background:var(--nav);color:var(--nav-ink);border-color:var(--nav)}
+.head{display:flex;justify-content:space-between;gap:1rem;align-items:start;flex-wrap:wrap}
+.pct{font-weight:800;font-size:2.8rem;line-height:1;text-align:right}
+.pct small{display:block;font:400 1rem "IBM Plex Sans",sans-serif;color:var(--muted);margin-top:.3rem}
+.tbl{overflow-x:auto;margin-top:.5rem}
+table{width:100%;border-collapse:collapse;min-width:520px}
+th{color:var(--muted);font-weight:600;text-align:left;padding:.6rem .5rem}
+td{padding:.7rem .5rem;border-top:1px solid var(--line)}
+th.r,td.r{text-align:right}
+.x{background:none;border:0;font-size:1.2rem;color:var(--muted);cursor:pointer;min-width:36px;min-height:36px;border-radius:8px}
+.x:hover{color:var(--bad)}
+label{display:block;font-weight:600;font-size:.95rem;color:var(--muted);margin-bottom:.3rem}
+input,select{font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:.55rem .75rem;min-height:44px;width:100%}
+td input{min-height:36px;width:90px;padding:.2rem .5rem}
+.f{flex:1 1 130px}.f2{flex:2 1 180px}
+.form{margin-top:1.25rem;border-top:1px solid var(--line);padding-top:1rem}
+.err{color:var(--bad);min-height:1.3em;margin:.5rem 0 0}
+.result{border:1.5px dashed var(--line);background:var(--bg);border-radius:14px;padding:1.25rem;margin-top:1.25rem}
+.result .big{margin:.3rem 0}
+.good{color:var(--good)}.warn{color:var(--warn)}.bad{color:var(--bad)}
+.gpa-top{display:flex;justify-content:space-between;align-items:baseline;gap:1rem;flex-wrap:wrap}
+.gpa-top .big{font-size:3rem;margin:0}
+.gpa-top .big small{font:400 1.1rem "IBM Plex Sans",sans-serif;color:var(--muted)}
+.empty{color:var(--muted);padding:2rem 0}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+.pop{position:fixed;left:50%;top:calc(env(safe-area-inset-top,0px) + 5rem);transform:translateX(-50%);z-index:20;display:flex;align-items:center;gap:.75rem;width:max-content;max-width:min(92vw,380px);padding:.8rem 1rem;background:var(--surface);color:var(--ink);border:1px solid var(--bad);border-left-width:5px;border-radius:12px;box-shadow:0 8px 24px rgba(17,28,58,.18);font-weight:500}
+.pop[hidden]{display:none}
+.pop-x{background:none;border:0;color:var(--muted);font-size:1.3rem;line-height:1;cursor:pointer;min-width:32px;min-height:32px;border-radius:8px;flex:none}
+.pop-x:hover{color:var(--bad)}
+
+.net{display:inline-flex;align-items:center;gap:.5rem;padding:.4rem .8rem;border:1px solid var(--line);border-radius:999px;background:var(--surface);color:var(--muted);font-size:.9rem}
+.net i{width:9px;height:9px;border-radius:50%;background:var(--good)}
+.net.off i{background:var(--warn)}
+.net.java i{background:var(--amber)}
+</style>
+</head>
+<body data-page="overview">
+<header class="top" id="top"></header>
+<main id="app" class="wrap"></main>
+<script>
+var GT = (function () {
+  var KEY = 'gradetrack-v3';
+  var TYPES = ['Quiz', 'Test', 'Examination', 'Laboratory'];
+
+  function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 7); }
+  function it(name, type, score, max) { return { id: uid(), name: name, type: type, score: score, max: max }; }
+  function defaultWeights() { return { Quiz: 20, Test: 30, Examination: 50, Laboratory: 0 }; }
+  function seed() {
+    return { courses: [
+      { id: uid(), name: 'Physics 101', credits: 4, weights: { Quiz: 20, Test: 20, Examination: 40, Laboratory: 20 },
+        items: [it('Quiz 1', 'Quiz', 18, 20), it('Quiz 2', 'Quiz', 16, 20), it('Test 1', 'Test', 42, 50), it('Lab 1', 'Laboratory', 45, 50), it('Final exam', 'Examination', null, 100)] },
+      { id: uid(), name: 'Calculus II', credits: 3, weights: defaultWeights(),
+        items: [it('Quiz 1', 'Quiz', 45, 50), it('Test 1', 'Test', 83, 100), it('Final exam', 'Examination', null, 100)] },
+      { id: uid(), name: 'Intro to Programming', credits: 3, weights: defaultWeights(),
+        items: [it('Quiz 1', 'Quiz', 90, 100), it('Test 1', 'Test', 85, 100), it('Final exam', 'Examination', 89, 100)] }
+    ] };
+  }
+  function load() { try { var r = localStorage.getItem(KEY); if (r) { var s = JSON.parse(r); if (s && s.courses) return s; } } catch (e) {} return null; }
+
+  var state = load() || seed();
+  var remote = false, backendInfo = '';   // remote = true when the Java server is answering
+
+  // Talk to the Java backend. Every change comes back with the full, updated list of courses.
+  function api(method, path, body) {
+    var opt = { method: method, headers: {}, cache: 'no-store' };
+    if (body !== undefined) { opt.headers['Content-Type'] = 'application/json'; opt.body = JSON.stringify(body); }
+    return fetch('api/' + path, opt).then(function (r) {
+      return r.text().then(function (t) {
+        var d = null; try { d = t ? JSON.parse(t) : null; } catch (e) {}
+        if (!r.ok) {
+          var err = new Error((d && d.error) || 'The Java server returned an error (' + r.status + ').');
+          err.status = r.status; err.data = d; throw err;
+        }
+        if (method !== 'GET' && d && d.courses) state.courses = d.courses;
+        return d;
+      });
+    }, function () {
+      var err = new Error('Cannot reach the Java server. Is it still running?'); err.status = 0; throw err;
+    });
+  }
+
+  // Is the Java backend there? If not, the site keeps working on its own with browser storage.
+  function boot() {
+    var ctl = typeof AbortController !== 'undefined' ? new AbortController() : null;
+    var timer = setTimeout(function () { if (ctl) ctl.abort(); }, 1500);
+    return fetch('api/health', { cache: 'no-store', signal: ctl ? ctl.signal : undefined })
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (h) {
+        clearTimeout(timer);
+        if (!h || !h.ok) return;
+        return api('GET', 'state?sort=added').then(function (d) { state.courses = d.courses; remote = true; backendInfo = h.backend || 'Java'; });
+      })
+      .catch(function () { clearTimeout(timer); remote = false; })
+      .then(function () { netStatus(); });
+  }
+
+  function save() { if (remote) return; try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {} }
+  function esc(s) { return String(s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+  function f1(n) { return (Math.round(n * 10) / 10).toFixed(1); }
+  function byId(id) { return state.courses.filter(function (c) { return c.id === id; })[0]; }
+  function cls(p) { return p >= 85 ? 'good' : p >= 70 ? 'warn' : 'bad'; }
+
+  // Total score and total possible points of one category in one course
+  function typeTotals(c, t) {
+    if (c.totals) { var v = c.totals[t]; return v ? { score: v.score, max: v.max } : { score: 0, max: 0 }; }   // computed by Java
+    var sc = 0, mx = 0;
+    c.items.forEach(function (i) {
+      if (i.type === t && i.score !== null) { sc += i.score; mx += i.max; }
+    });
+    return { score: sc, max: mx };
+  }
+
+  // Built-in types plus any custom type the student has typed in for this course
+  function cats(c) {
+    if (c.categories) return c.categories.slice();   // computed by Java
+    var out = TYPES.slice();
+    c.items.forEach(function (i) { if (out.indexOf(i.type) < 0) out.push(i.type); });
+    return out;
+  }
+
+  // Clean a typed custom type; reuse the built-in / existing spelling when it matches ignoring case
+  function normType(raw, c) {
+    var t = String(raw).replace(/\s+/g, ' ').trim();
+    if (!t) return '';
+    var all = cats(c);
+    for (var k = 0; k < all.length; k++) if (all[k].toLowerCase() === t.toLowerCase()) return all[k];
+    return t;
+  }
+
+  function lev(a, b) {
+    var d = [], i, j;
+    for (i = 0; i <= a.length; i++) { d[i] = [i]; }
+    for (j = 1; j <= b.length; j++) { d[0][j] = j; }
+    for (i = 1; i <= a.length; i++) for (j = 1; j <= b.length; j++)
+      d[i][j] = Math.min(d[i - 1][j] + 1, d[i][j - 1] + 1, d[i - 1][j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1));
+    return d[a.length][b.length];
+  }
+
+  // Returns the existing type that a typed name matches, ignoring case and allowing a small typo (e.g. "labaratory"), or ''
+  function findSimilar(raw, c) {
+    var t = String(raw).replace(/\s+/g, ' ').trim().toLowerCase();
+    if (!t) return '';
+    var all = cats(c);
+    for (var k = 0; k < all.length; k++) {
+      var e = all[k].toLowerCase(), max = e.length >= 7 ? 2 : e.length >= 4 ? 1 : 0;
+      if (e === t || lev(e, t) <= max) return all[k];
+    }
+    return '';
+  }
+
+  // Search and sort used only when the Java server is not running (the server does it with GradeBook / Course)
+  function localCourses(q, sort) {
+    q = String(q || '').trim().toLowerCase();
+    var out = state.courses.filter(function (c) { return !q || c.name.toLowerCase().indexOf(q) >= 0; });
+    if (sort === 'name') out.sort(function (a, b) { return a.name.toLowerCase() < b.name.toLowerCase() ? -1 : a.name.toLowerCase() > b.name.toLowerCase() ? 1 : 0; });
+    else if (sort === 'grade') out.sort(function (a, b) {
+      var ga = stats(a).grade, gb = stats(b).grade;
+      return ga === null && gb === null ? 0 : ga === null ? 1 : gb === null ? -1 : gb - ga;
+    });
+    return out;
+  }
+  function localItems(c, q, sort) {
+    q = String(q || '').trim().toLowerCase();
+    var out = c.items.filter(function (i) { return !q || i.name.toLowerCase().indexOf(q) >= 0 || i.type.toLowerCase().indexOf(q) >= 0; });
+    var pc = function (i) { return i.score === null ? null : i.score / i.max * 100; };
+    if (sort === 'name') out.sort(function (a, b) { return a.name.toLowerCase() < b.name.toLowerCase() ? -1 : a.name.toLowerCase() > b.name.toLowerCase() ? 1 : 0; });
+    else if (sort === 'type') out.sort(function (a, b) { return a.type.toLowerCase() < b.type.toLowerCase() ? -1 : a.type.toLowerCase() > b.type.toLowerCase() ? 1 : 0; });
+    else if (sort === 'score') out.sort(function (a, b) { var x = pc(a), y = pc(b); return x === null && y === null ? 0 : x === null ? 1 : y === null ? -1 : y - x; });
+    return out;
+  }
+
+  var toastEl, toastTimer;
+  function toast(text) {
+    if (!toastEl) {
+      toastEl = document.createElement('div');
+      toastEl.className = 'pop'; toastEl.setAttribute('role', 'alert');
+      toastEl.innerHTML = '<span class="pop-msg"></span><button type="button" class="pop-x" aria-label="Close message">\u00d7</button>';
+      toastEl.querySelector('.pop-x').addEventListener('click', function () { toastEl.hidden = true; });
+      document.body.appendChild(toastEl);
+    }
+    if (!toastEl.isConnected) document.body.appendChild(toastEl);
+    clearTimeout(toastTimer);
+    if (!text) { toastEl.hidden = true; return; }
+    toastEl.querySelector('.pop-msg').textContent = text;
+    toastEl.hidden = false;
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { toastEl.hidden = true; }, 4500);
+  }
+
+  function stats(c) {
+    if (c.stats) return c.stats;   // computed by Java (GradeCalculator)
+    var gw = 0, tw = 0, earned = 0;
+    cats(c).forEach(function (t) {
+      var w = c.weights[t] || 0, a = typeTotals(c, t);
+      tw += w;
+      if (a.max > 0) { gw += w; earned += a.score / a.max * w; }
+    });
+    return { gw: gw, tw: tw, earned: earned, grade: gw ? earned / gw * 100 : null, graded: tw ? gw / tw * 100 : 0 };
+  }
+
+  // Each row: [lowest percent for this grade, grade, description]
+  var SCALE = [
+    [97, 1.00, 'Excellent'],
+    [94, 1.25, 'Excellent'],
+    [91, 1.50, 'Very Good'],
+    [88, 1.75, 'Very Good'],
+    [85, 2.00, 'Good'],
+    [82, 2.25, 'Good'],
+    [79, 2.50, 'Satisfactory'],
+    [76, 2.75, 'Passing'],
+    [75, 3.00, 'Passing'],
+    [0,  5.00, 'Failed']
+  ];
+  function row(p) {
+    for (var i = 0; i < SCALE.length; i++) if (p >= SCALE[i][0]) return SCALE[i];
+    return SCALE[SCALE.length - 1];
+  }
+  function points(p) { return row(p)[1]; }
+  function describe(p) { return row(p)[2]; }
+
+  function netStatus() {
+    var el = document.getElementById('net'); if (!el) return;
+    var on = navigator.onLine !== false, ready = !!window.__swReady;
+    if (remote) { el.className = 'net java'; el.innerHTML = '<i></i>Java backend · saved to file'; return; }
+    var local = /^(localhost|127\.0\.0\.1|\[::1\])$/.test(location.hostname);
+    el.className = 'net' + (on && !local ? '' : ' off');
+    el.innerHTML = '<i></i>' + (local ? 'Java server not reachable · using browser storage' : !on ? 'Offline · working from saved copy' : ready ? 'Online · offline ready' : 'Online · preparing offline');
+  }
+  window.addEventListener('online', netStatus); window.addEventListener('offline', netStatus);
+  function header(pg) {
+    var top = document.getElementById('top');
+    if (!top) return;
+    var page = pg || document.body.getAttribute('data-page');
+    var links = [['index.html', 'overview', 'Overview'], ['courses.html', 'courses', 'Courses'], ['target.html', 'target', 'Target grade'], ['gpa.html', 'gpa', 'GPA']];
+    top.innerHTML = '<div class="top-in"><a class="brand" href="#overview"><i></i>GradeTrack</a><nav aria-label="Main">' +
+      links.map(function (l) { return '<a href="#' + l[1] + '"' + (l[1] === page ? ' aria-current="page"' : '') + '>' + l[2] + '</a>'; }).join('') + '</nav><span class="net" id="net" role="status"></span></div>';
+    netStatus();
+  }
+  header();
+
+  return { state: state, api: api, boot: boot, localCourses: localCourses, localItems: localItems, isRemote: function () { return remote; }, TYPES: TYPES, cats: cats, normType: normType, findSimilar: findSimilar, toast: toast, SCALE: SCALE, uid: uid, it: it, defaultWeights: defaultWeights, save: save, esc: esc, f1: f1, byId: byId, cls: cls, typeTotals: typeTotals, header: header, netStatus: netStatus, stats: stats, points: points, describe: describe };
+})();
+</script>
+<script>
+var PAGES = {
+overview: function () {
+(function () {
+  var app = document.getElementById('app');
+  var ui = { q: '', sort: 'added', seq: 0 };
+
+  function card(c) {
+    var s = GT.stats(c);
+    return '<a class="card" style="display:block;text-decoration:none;color:inherit" href="#courses" data-course="' + c.id + '"><h3>' + GT.esc(c.name) + '</h3>' +
+      '<div class="big">' + (s.grade === null ? '–' : GT.f1(s.grade) + '%') + '</div>' +
+      '<div class="bar" aria-hidden="true"><i style="width:' + (s.grade === null ? 0 : Math.min(100, s.grade)) + '%"></i></div>' +
+      '<span class="muted">' + Math.round(s.graded) + '% of the course graded</span></a>';
+  }
+
+  function paint(list) {
+    var g = document.getElementById('oGrid');
+    if (!g) return;
+    g.innerHTML = list.length ? list.map(card).join('') : '<p class="empty" style="grid-column:1/-1">No course matches “' + GT.esc(ui.q) + '”.</p>';
+  }
+
+  // Searching and sorting is done by the Java server (GradeBook.search); the browser does it only when no server is running
+  function refresh() {
+    var n = ++ui.seq;
+    if (GT.isRemote()) {
+      GT.api('GET', 'state?q=' + encodeURIComponent(ui.q) + '&sort=' + ui.sort)
+        .then(function (d) { if (n === ui.seq) paint(d.courses); })
+        .catch(function (e) { GT.toast(e.message); });
+    } else paint(GT.localCourses(ui.q, ui.sort));
+  }
+
+  var has = GT.state.courses.length > 0;
+  app.innerHTML =
+    '<h1>See where every grade stands.</h1>' +
+    '<p class="lead">Log each quiz, test and examination with its weight. GradeTrack keeps your running grade, tells you what the final needs to be, and turns it all into a GPA.</p>' +
+    '<div class="row"><a class="btn pri" href="#courses" style="text-decoration:none;display:inline-flex;align-items:center">Add your scores</a>' +
+    '<a class="btn" href="#target" style="text-decoration:none;display:inline-flex;align-items:center">What do I need on the final?</a></div>' +
+    (has ? '<div class="row" style="margin-top:2rem"><div class="f2"><label for="oQ">Search courses</label><input id="oQ" type="search" maxlength="40" placeholder="Type a course name" autocomplete="off"></div>' +
+      '<div class="f"><label for="oSort">Sort by</label><select id="oSort"><option value="added">Order added</option><option value="name">Name (A–Z)</option><option value="grade">Grade (high to low)</option></select></div></div>' : '') +
+    (has ? '<div class="grid" id="oGrid" style="margin-top:1rem"></div>' : '<p class="empty">No subjects yet. Open Courses and add your first one.</p>');
+  if (has) paint(GT.state.courses);
+
+  app.addEventListener('input', function (e) { if (e.target.id === 'oQ') { ui.q = e.target.value; refresh(); } });
+  app.addEventListener('change', function (e) { if (e.target.id === 'oSort') { ui.sort = e.target.value; refresh(); } });
+})();
+
+},
+courses: function () {
+(function () {
+  var app = document.getElementById('app');
+  var params = { get: function () { return window.__sel || null; } };
+  var ui = { course: params.get('c'), adding: false, iq: '', isort: 'entry', seq: 0 };
+  var remote = GT.isRemote();
+
+  function val(id) { return document.getElementById(id); }
+  function msg(id, t) { var e = val(id); if (e) e.textContent = t; }
+  function dupMsg(d) { return '\u201c' + d + '\u201d is already in the list. Choose it from the Type dropdown instead.'; }
+
+  function rowHtml(i) {
+    var sc = i.score === null
+      ? '<input type="number" min="0" step="any" inputmode="decimal" placeholder="not graded" aria-label="Score for ' + GT.esc(i.name) + '" data-score="' + i.id + '">'
+      : i.score + ' / ' + i.max;
+    return '<tr><td>' + GT.esc(i.name) + '</td><td class="muted">' + GT.esc(i.type) + '</td><td class="r">' + sc + '</td><td class="r">' + (i.score === null ? '' : GT.f1(i.score / i.max * 100) + '%') + '</td>' +
+      '<td class="r"><button class="x" data-deli="' + i.id + '" aria-label="Delete ' + GT.esc(i.name) + '">×</button></td></tr>';
+  }
+
+  // Fill the scores table. Searching and sorting the scores is done by the Java server (Course.searchItems).
+  function paintRows() {
+    var cur = GT.byId(ui.course);
+    if (!cur || !val('itemRows')) return;
+    var n = ++ui.seq;
+    function put(list) {
+      if (n !== ui.seq || !val('itemRows')) return;
+      val('itemRows').innerHTML = list.length ? list.map(rowHtml).join('') : '<tr><td colspan="5" class="muted">No score matches “' + GT.esc(ui.iq) + '”.</td></tr>';
+    }
+    if (!ui.iq && ui.isort === 'entry') { put(cur.items); return; }
+    if (remote) {
+      GT.api('GET', 'courses/' + cur.id + '/items?q=' + encodeURIComponent(ui.iq) + '&sort=' + ui.isort)
+        .then(function (d) { put(d.items); }).catch(function (e) { GT.toast(e.message); });
+    } else put(GT.localItems(cur, ui.iq, ui.isort));
+  }
+
+  function render() {
+    var cur = GT.byId(ui.course) || GT.state.courses[0];
+    if (cur) ui.course = cur.id;
+    var tabs = GT.state.courses.map(function (c) {
+      return '<button class="tab" data-tab="' + c.id + '" aria-pressed="' + (cur && c.id === cur.id) + '">' + GT.esc(c.name) + '</button>';
+    }).join('') + '<button class="tab" data-newc="1" aria-pressed="' + ui.adding + '">+ New course</button>';
+
+    var newForm = ui.adding ? '<div class="card" style="margin-bottom:1rem"><h3>New course</h3><div class="row" style="margin-top:.75rem">' +
+      '<div class="f2"><label for="cName">Subject name</label><input id="cName" maxlength="40" placeholder="e.g. Biology" autocomplete="off"></div>' +
+      '<div class="f"><label for="cCred">Credits</label><input id="cCred" type="number" min="0" step="any" value="3"></div>' +
+      '<button class="btn pri" data-createc="1">Create course</button></div><p class="err" id="cErr" role="alert"></p></div>' : '';
+
+    var panel = '';
+    if (cur) {
+      var s = GT.stats(cur);
+
+      var cats = GT.cats(cur).map(function (t) {
+        var a = GT.typeTotals(cur, t);
+        return '<tr><td>' + GT.esc(t) + '</td>' +
+          '<td class="r">' + (a.max ? GT.f1(a.score) + ' / ' + GT.f1(a.max) : '<span class="muted">none yet</span>') + '</td>' +
+          '<td class="r">' + (a.max ? GT.f1(a.score / a.max * 100) + '%' : '') + '</td>' +
+          '<td class="r"><input type="number" min="0" step="any" value="' + (cur.weights[t] || 0) + '" data-w="' + GT.esc(t) + '" aria-label="Weight of ' + GT.esc(t) + ' in percent"> %</td></tr>';
+      }).join('');
+
+      var scoresBlock = cur.items.length
+        ? '<div class="row" style="margin:.5rem 0 0"><div class="f2"><label for="iQ">Search scores</label><input id="iQ" type="search" maxlength="40" placeholder="Name or type" autocomplete="off" value="' + GT.esc(ui.iq) + '"></div>' +
+          '<div class="f"><label for="iSort">Sort by</label><select id="iSort">' +
+          [['entry', 'Order added'], ['name', 'Name (A–Z)'], ['type', 'Type'], ['score', 'Score (high to low)']].map(function (o) {
+            return '<option value="' + o[0] + '"' + (o[0] === ui.isort ? ' selected' : '') + '>' + o[1] + '</option>';
+          }).join('') + '</select></div></div>' +
+          '<div class="tbl"><table><thead><tr><th>Assessment</th><th>Type</th><th class="r">Score</th><th class="r">Percent</th><th></th></tr></thead><tbody id="itemRows"></tbody></table></div>'
+        : '<p class="empty">No scores yet. Add your first below.</p>';
+
+      panel = '<div class="card"><div class="head"><div><h2 style="font-size:1.7rem;margin:0">' + GT.esc(cur.name) + '</h2>' +
+        '<span class="muted">' + cur.credits + ' credits · category weights add up to ' + s.tw + '%</span>' +
+        (s.tw !== 100 ? '<div class="warn">Category weights should add up to 100%.</div>' : '') + '</div>' +
+        '<div class="pct ' + (s.grade === null ? '' : GT.cls(s.grade)) + '">' + (s.grade === null ? '–' : GT.f1(s.grade) + '%') + '<small>current grade</small></div></div>' +
+        '<div class="bar" aria-hidden="true"><i style="width:' + (s.grade === null ? 0 : Math.min(100, s.grade)) + '%"></i></div>' +
+
+        '<h3 style="margin-top:1rem">Categories</h3><p class="muted" style="margin:.25rem 0 0">Set the weight of each category once. Each category’s percent is its total score divided by its total possible points.</p>' +
+        '<div class="tbl"><table style="min-width:420px"><thead><tr><th>Category</th><th class="r">Total score</th><th class="r">Percent</th><th class="r">Weight</th></tr></thead><tbody>' + cats + '</tbody></table></div>' +
+
+        '<h3 style="margin-top:1.25rem">Scores</h3>' + scoresBlock +
+
+        '<div class="form"><div class="row">' +
+        '<div class="f2"><label for="aName">Name</label><input id="aName" maxlength="40" placeholder="e.g. Quiz 2" autocomplete="off"></div>' +
+        '<div class="f"><label for="aType">Type</label><select id="aType">' + GT.cats(cur).map(function (t) { return '<option value="' + GT.esc(t) + '">' + GT.esc(t) + '</option>'; }).join('') + '<option value="__other__">Other (specify)</option></select></div>' +
+        '<div class="f" id="aOtherWrap" hidden><label for="aOther">Specify type</label><input id="aOther" maxlength="30" placeholder="e.g. Project" autocomplete="off"></div>' +
+        '<div class="f"><label for="aScore">Score</label><input id="aScore" type="number" min="0" step="any" inputmode="decimal" placeholder="blank = not graded"></div>' +
+        '<div class="f"><label for="aMax">Out of</label><input id="aMax" type="number" min="1" step="any" value="100"></div>' +
+        '<button class="btn pri" data-addi="1">Add score</button></div><p class="err" id="aErr" role="alert"></p></div>' +
+        '<button class="btn sm" data-delc="' + cur.id + '">Delete course</button></div>';
+    } else if (!ui.adding) {
+      panel = '<p class="empty">No courses yet. Choose “+ New course” to add your first subject.</p>';
+    }
+    app.innerHTML = '<h2>Courses</h2><div class="tabs">' + tabs + '</div>' + newForm + panel;
+    paintRows();
+  }
+
+  app.addEventListener('click', function (e) {
+    var b = e.target.closest('[data-tab],[data-newc],[data-createc],[data-addi],[data-deli],[data-delc]');
+    if (!b) return;
+    var d = b.dataset, S = GT.state;
+    if (d.tab) { ui.course = d.tab; ui.adding = false; ui.iq = ''; ui.isort = 'entry'; render(); return; }
+    if (d.newc) { ui.adding = !ui.adding; render(); if (ui.adding) val('cName').focus(); return; }
+    if (d.createc) {
+      if (remote) {   // the Java server validates the name and credits and checks for a duplicate
+        GT.api('POST', 'courses', { name: val('cName').value, credits: val('cCred').value })
+          .then(function (r) { ui.course = r.created; ui.adding = false; ui.iq = ''; ui.isort = 'entry'; render(); val('aName').focus(); })
+          .catch(function (err) { msg('cErr', err.message); });
+        return;
+      }
+      var n = val('cName').value.trim(), cr = parseFloat(val('cCred').value);
+      if (!n) return msg('cErr', 'Enter a subject name.');
+      if (isNaN(cr) || cr < 0) return msg('cErr', 'Credits must be 0 or more.');
+      if (S.courses.some(function (c) { return c.name.toLowerCase() === n.toLowerCase(); })) return msg('cErr', 'That course already exists.');
+      var c = { id: GT.uid(), name: n, credits: cr, weights: GT.defaultWeights(), items: [] };
+      S.courses.push(c); ui.course = c.id; ui.adding = false; GT.save(); render(); val('aName').focus(); return;
+    }
+    if (d.addi) {
+      var cur = GT.byId(ui.course), type = val('aType').value, custom = type === '__other__';
+      if (remote) {   // Assessment / Course setters in Java validate; a duplicate type comes back as an error too
+        GT.api('POST', 'courses/' + cur.id + '/items', { name: val('aName').value, type: custom ? val('aOther').value : type, custom: custom, score: val('aScore').value, max: val('aMax').value })
+          .then(function () { render(); val('aName').focus(); })
+          .catch(function (err) {
+            if (err.status === 409) { GT.toast(err.message); val('aOther').focus(); } else msg('aErr', err.message);
+          });
+        return;
+      }
+      var name = val('aName').value.trim(), sv = val('aScore').value.trim(), mx = parseFloat(val('aMax').value);
+      var sc = sv === '' ? null : parseFloat(sv);
+      if (custom) {
+        var dup = GT.findSimilar(val('aOther').value, cur);
+        if (dup) { GT.toast(dupMsg(dup)); val('aOther').focus(); return; }
+        type = GT.normType(val('aOther').value, cur);
+        if (!type) return msg('aErr', 'Type in the kind of activity, for example “Project”.');
+      }
+      if (!name) return msg('aErr', 'Name this score, for example “Quiz 2”.');
+      if (isNaN(mx) || mx <= 0) return msg('aErr', '“Out of” must be greater than 0.');
+      if (sc !== null && (isNaN(sc) || sc < 0)) return msg('aErr', 'Score must be 0 or more, or blank if not graded yet.');
+      if (sc !== null && sc > mx) return msg('aErr', 'Score can’t be higher than the total.');
+      cur.items.push(GT.it(name, type, sc, mx)); GT.save(); render(); val('aName').focus(); return;
+    }
+    if (d.deli) {
+      if (remote) { GT.api('DELETE', 'courses/' + ui.course + '/items/' + d.deli).then(render).catch(function (err) { GT.toast(err.message); }); return; }
+      var c2 = GT.byId(ui.course); c2.items = c2.items.filter(function (i) { return i.id !== d.deli; }); GT.save(); render(); return;
+    }
+    if (d.delc && confirm('Delete this course and all its scores?')) {
+      if (remote) { GT.api('DELETE', 'courses/' + d.delc).then(function () { ui.course = null; render(); }).catch(function (err) { GT.toast(err.message); }); return; }
+      S.courses = S.courses.filter(function (c3) { return c3.id !== d.delc; });
+      ui.course = null; GT.save(); render();
+    }
+  });
+
+  app.addEventListener('input', function (e) {
+    if (e.target.id === 'iQ') { ui.iq = e.target.value; paintRows(); }
+  });
+
+  app.addEventListener('change', function (e) {
+    var t = e.target, c = GT.byId(ui.course);
+    if (t.id === 'iSort') { ui.isort = t.value; paintRows(); return; }
+    if (t.id === 'aOther') {
+      if (remote) {
+        if (!t.value.trim()) { GT.toast(''); return; }
+        GT.api('GET', 'courses/' + c.id + '/type-check?type=' + encodeURIComponent(t.value))
+          .then(function (r) { GT.toast(r.similar ? dupMsg(r.similar) : ''); }).catch(function () {});
+        return;
+      }
+      var d = GT.findSimilar(t.value, c);
+      GT.toast(d ? dupMsg(d) : '');
+      return;
+    }
+    if (t.id === 'aType') {
+      var other = t.value === '__other__';
+      val('aOtherWrap').hidden = !other;
+      if (other) val('aOther').focus();
+      return;
+    }
+    if (t.dataset && t.dataset.score) {
+      if (remote) {
+        GT.api('PUT', 'courses/' + c.id + '/items/' + t.dataset.score, { score: t.value })
+          .then(render).catch(function (err) { GT.toast(err.message); render(); });
+        return;
+      }
+      var v = parseFloat(t.value);
+      var item = c.items.filter(function (i) { return i.id === t.dataset.score; })[0];
+      if (!isNaN(v) && v >= 0 && v <= item.max) { item.score = v; GT.save(); render(); }
+      else { t.value = ''; }
+    }
+    if (t.dataset && t.dataset.w) {
+      if (remote) {
+        GT.api('PUT', 'courses/' + c.id + '/weights', { category: t.dataset.w, weight: t.value })
+          .then(render).catch(function (err) { GT.toast(err.message); render(); });
+        return;
+      }
+      var w = parseFloat(t.value);
+      c.weights[t.dataset.w] = (isNaN(w) || w < 0) ? 0 : w;
+      GT.save(); render();
+    }
+  });
+
+  app.addEventListener('keydown', function (e) {
+    if (e.key !== 'Enter') return;
+    var id = e.target.id;
+    if (/^a(Name|Score|Max|Other)$/.test(id)) app.querySelector('[data-addi]').click();
+    if (/^c(Name|Cred)$/.test(id)) app.querySelector('[data-createc]').click();
+  });
+
+  render();
+})();
+
+},
+target: function () {
+(function () {
+  var app = document.getElementById('app');
+  var params = { get: function () { return window.__sel || null; } };
+  var ui = { course: params.get('c'), target: 85, seq: 0 };
+  var remote = GT.isRemote();
+
+  var MIN = 75;
+  var MSG = 'Target grade must be at least 75 (the passing mark).';
+  var pop = document.createElement('div');
+  pop.className = 'pop'; pop.setAttribute('role', 'alert'); pop.hidden = true;
+  pop.innerHTML = '<span class="pop-msg"></span><button type="button" class="pop-x" aria-label="Close message">×</button>';
+  document.body.appendChild(pop);
+  var popTimer;
+  function showPop(text) {
+    pop.querySelector('.pop-msg').textContent = text || MSG;
+    pop.hidden = false;
+    clearTimeout(popTimer);
+    popTimer = setTimeout(hidePop, 4500);
+  }
+  function hidePop() { pop.hidden = true; clearTimeout(popTimer); }
+  pop.querySelector('.pop-x').addEventListener('click', hidePop);
+
+  // Browser-only calculation (used when the Java server is not running)
+  function result(cur, t) {
+    var s = GT.stats(cur), rem = s.tw - s.gw;
+    if (isNaN(t)) return '<p>Enter a target grade to see what you need.</p>';
+    if (t < MIN) return '<p>Enter a target of ' + MIN + ' or higher to see what you need.</p>';
+    if (rem <= 0) return '<p>Everything is graded. Your final grade is <b class="' + GT.cls(s.earned / s.tw * 100) + '">' + GT.f1(s.earned / s.tw * 100) + '%</b>.</p>';
+    var need = (t / 100 * s.tw - s.earned) / rem * 100;
+    var out = '<p class="muted">You have earned ' + GT.f1(s.earned) + ' of ' + s.tw + ' points. ' + Math.round(rem) + '% of the course is still ungraded.</p>';
+    if (need <= 0) out += '<div class="big good">Secured</div><p>You already reach ' + t + '% even with zeros on the rest.</p>';
+    else if (need > 100) out += '<div class="big bad">' + GT.f1(need) + '%</div><p>That is above 100%. Even full marks on the remaining work leaves you at ' + GT.f1(s.earned + rem) + '%.</p>';
+    else out += '<div class="big ' + (need > 90 ? 'warn' : 'good') + '">' + GT.f1(need) + '%</div><p>Aim for this average across the remaining work.</p>';
+    return out;
+  }
+
+  // The same screen text, built from the answer of the Java server (GradeCalculator.target)
+  function resultFromServer(r, t) {
+    if (r.kind === 'ALL_GRADED') return '<p>Everything is graded. Your final grade is <b class="' + GT.cls(r.bestPossible) + '">' + GT.f1(r.bestPossible) + '%</b>.</p>';
+    var out = '<p class="muted">You have earned ' + GT.f1(r.earned) + ' of ' + r.totalWeight + ' points. ' + Math.round(r.ungraded) + '% of the course is still ungraded.</p>';
+    if (r.kind === 'SECURED') out += '<div class="big good">Secured</div><p>You already reach ' + t + '% even with zeros on the rest.</p>';
+    else if (r.kind === 'IMPOSSIBLE') out += '<div class="big bad">' + GT.f1(r.needed) + '%</div><p>That is above 100%. Even full marks on the remaining work leaves you at ' + GT.f1(r.bestPossible) + '%.</p>';
+    else out += '<div class="big ' + (r.needed > 90 ? 'warn' : 'good') + '">' + GT.f1(r.needed) + '%</div><p>Aim for this average across the remaining work.</p>';
+    return out;
+  }
+
+  function calculate(cur, t, typed) {
+    var out = document.getElementById('tOut');
+    if (!out) return;
+    if (!remote) {
+      out.innerHTML = result(cur, t);
+      // Show the popup as soon as a complete-looking value (2+ digits) is below 75, so typing 8 on the way to 85 does not trigger it
+      if (isNaN(t) || t >= MIN) hidePop(); else if (typed) showPop();
+      return;
+    }
+    if (isNaN(t)) { out.innerHTML = '<p>Enter a target grade to see what you need.</p>'; hidePop(); return; }
+    var n = ++ui.seq;
+    GT.api('GET', 'target?course=' + encodeURIComponent(cur.id) + '&target=' + encodeURIComponent(t))
+      .then(function (r) { if (n !== ui.seq) return; out.innerHTML = resultFromServer(r, t); hidePop(); })
+      .catch(function (err) {
+        if (n !== ui.seq) return;
+        out.innerHTML = '<p>' + GT.esc(t < MIN ? 'Enter a target of ' + MIN + ' or higher to see what you need.' : err.message) + '</p>';
+        if (err.status === 400 && t < MIN) { if (typed) showPop(err.message); } else { hidePop(); if (err.status !== 400) GT.toast(err.message); }
+      });
+  }
+
+  function render() {
+    if (!GT.state.courses.length) { app.innerHTML = '<h2>Target grade</h2><p class="empty">Add a course first on the Courses page.</p>'; return; }
+    var cur = GT.byId(ui.course) || GT.state.courses[0];
+    ui.course = cur.id;
+    app.innerHTML = '<h2>Target grade</h2><p class="lead">Pick a course and the grade you want. GradeTrack works out the average you need on what is left.</p>' +
+      '<div class="card"><div class="row"><div class="f2"><label for="tCourse">Course</label><select id="tCourse">' +
+      GT.state.courses.map(function (c) { return '<option value="' + c.id + '"' + (c.id === cur.id ? ' selected' : '') + '>' + GT.esc(c.name) + '</option>'; }).join('') +
+      '</select></div><div class="f2"><label for="tVal">Target final grade %</label><input id="tVal" type="number" min="75" step="any" value="' + (isNaN(ui.target) ? '' : ui.target) + '"></div></div>' +
+      '<div class="result" id="tOut"></div></div>';
+    calculate(cur, ui.target, false);
+  }
+
+  app.addEventListener('change', function (e) {
+    if (e.target.id === 'tCourse') { ui.course = e.target.value; render(); }
+  });
+  app.addEventListener('input', function (e) {
+    if (e.target.id === 'tVal') {
+      ui.target = parseFloat(e.target.value);
+      calculate(GT.byId(ui.course), ui.target, e.target.value.trim().length >= 2);
+    }
+  });
+  app.addEventListener('change', function (e) {
+    if (e.target.id === 'tVal' && !isNaN(ui.target) && ui.target < MIN) showPop(MSG);
+  });
+
+  render();
+})();
+
+},
+gpa: function () {
+(function () {
+  var app = document.getElementById('app');
+
+  function draw(gpa, rows) {
+    app.innerHTML =
+      '<h2>GPA</h2><p class="lead">Based on your current course grades and credit hours. 1.00 is the highest grade.</p>' +
+      '<div class="card"><div class="gpa-top"><span class="muted">Weighted by credits</span>' +
+      '<div class="big">' + (gpa === null ? '–' : gpa.toFixed(2)) + '</div></div>' +
+      (rows.length
+        ? '<div class="tbl"><table style="min-width:420px"><thead><tr><th>Course</th><th class="r">Credits</th><th class="r">Percent</th><th class="r">Grade</th><th class="r">Description</th></tr></thead><tbody>' +
+          rows.map(function (r) {
+            return '<tr><td>' + GT.esc(r.name) + '</td><td class="r">' + r.credits + '</td><td class="r">' +
+              (r.percent === null ? '–' : GT.f1(r.percent) + '%') + '</td><td class="r">' +
+              (r.points === null ? '–' : r.points.toFixed(2)) + '</td><td class="r">' +
+              (r.description === null ? '–' : r.description) + '</td></tr>';
+          }).join('') + '</tbody></table></div>'
+        : '<p class="empty">No courses yet.</p>') +
+      '</div>';
+  }
+
+  if (GT.isRemote()) {   // GPA computed by Java (GradeScale.gpa)
+    GT.api('GET', 'gpa').then(function (d) { draw(d.gpa, d.rows); }).catch(function (e) { GT.toast(e.message); });
+    return;
+  }
+  var tp = 0, tc = 0;
+  var rows = GT.state.courses.map(function (c) {
+    var s = GT.stats(c), p = s.grade === null ? null : GT.points(s.grade);
+    if (p !== null) { tp += p * c.credits; tc += c.credits; }
+    return { name: c.name, credits: c.credits, percent: s.grade, points: p, description: s.grade === null ? null : GT.describe(s.grade) };
+  });
+  draw(tc ? tp / tc : null, rows);
+})();
+
+}
+};
+document.addEventListener('click', function (e) {
+  var a = e.target.closest('[data-course]');
+  if (a) window.__sel = a.getAttribute('data-course');
+});
+function route() {
+  var h = (location.hash || '').slice(1);
+  if (!PAGES[h]) h = 'overview';
+  document.body.setAttribute('data-page', h);
+  GT.header(h);
+  Array.prototype.forEach.call(document.querySelectorAll('.pop'), function (p) { p.remove(); });
+  var old = document.getElementById('app'), m = document.createElement('main');
+  m.id = 'app'; m.className = 'wrap';
+  old.parentNode.replaceChild(m, old);
+  PAGES[h]();
+  window.scrollTo(0, 0);
+}
+window.addEventListener('hashchange', route);
+// First find out whether the Java server is running, then show the page
+GT.boot().then(route);
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', function () {
+    navigator.serviceWorker.register('sw.js').then(function () { return navigator.serviceWorker.ready; })
+      .then(function () { window.__swReady = true; GT.netStatus(); }).catch(function () {});
+  });
+}
+</script>
+</body>
+</html>
